@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name "UGR-22 Screen")(type "KiCad")(uri "${KIPRJMOD}/UGR-22 Screen.kicad_sym")(options "")(descr ""))
+)

@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import itertools
 
 #=======TASK 2 - CARRIER SIGNAL MODULATION========
 

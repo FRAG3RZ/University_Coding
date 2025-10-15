@@ -80,6 +80,13 @@ def bandpass_filter(signal_time_domain, signal, sampling_frequency, low_cutoff, 
     filtered_spectrum = spectrum * filter_mask
     filtered_signal_time_domain = np.fft.ifft(filtered_spectrum).real
 
+    #Noise SNR calculation
+    P_signal = np.mean(signal**2)
+    P_noise  = np.mean((noisy_signal - signal)**2)
+    SNR_dB   = 10 * np.log10(P_signal / P_noise)
+
+    print(SNR_dB)
+
     if show_plots:
         plt.figure(figsize=(14,12))
 
@@ -119,7 +126,7 @@ def bandpass_filter(signal_time_domain, signal, sampling_frequency, low_cutoff, 
 
 
 # Example usage
-sampling_frequency = 1000
+sampling_frequency = 300
 low_cutoff = 75
 high_cutoff = 125
 
@@ -136,5 +143,5 @@ time_array, modulated_carrier_wave = amplitude_modulation(
 )
 
 filtered_waveform, frequencies, bandpass_mask, noisy_signal = bandpass_filter(
-    time_array, modulated_carrier_wave, sampling_frequency, low_cutoff, high_cutoff, show_plots=True, add_noise=True, noise_strength=0.5
+    time_array, modulated_carrier_wave, sampling_frequency, low_cutoff, high_cutoff, show_plots=True, add_noise=True, noise_strength=0.25
 )

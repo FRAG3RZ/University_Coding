@@ -10,8 +10,7 @@ def compare_sampling(amplitude, frequency, num_samples_list, sample_frequencies_
     """
     combos = list(itertools.product(num_samples_list, sample_frequencies_list))
 
-    print(combos)
-    fig, axes = plt.subplots(len(combos), 1, figsize=(14, 3*len(combos)))
+    _, axes = plt.subplots(len(combos), 1, figsize=(14, 3*len(combos)))
 
     end_value_array = []
 
@@ -48,7 +47,9 @@ def compare_sampling(amplitude, frequency, num_samples_list, sample_frequencies_
 values = compare_sampling(
     amplitude=1.0,
     frequency=10,
-    num_samples_list=[50, 100],
-    sample_frequencies_list=[10, 20, 21, 50],
+    num_samples_list=[50],
+    sample_frequencies_list=[11, 20, 21, 50],
     show_original_frequency=True
 )
+
+print(values)

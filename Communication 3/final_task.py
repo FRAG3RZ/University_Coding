@@ -10,6 +10,7 @@ from rich import print as rprint
 
 # =======Utility Funtions=======
 
+
 def string_to_hex_array(word):
     # Make a list of each character and then append one by one
     word = list(f"{word}")
@@ -105,9 +106,11 @@ def display_results_table(results):
     console.print(table)
     console.print("\n")
 
+
 def _parse_number_list(s, cast=float):
     """Parse a comma-separated list into numbers with whitespace tolerance."""
     return [cast(x.strip()) for x in s.split(",") if x.strip() != ""]
+
 
 def ask_simulation_params(mode="single"):
     """
@@ -123,7 +126,7 @@ def ask_simulation_params(mode="single"):
     """
     assert mode in ("single", "sweep")
 
-    mode_choice = "Frequency Shift Keying (FSK)"  # constant in your code
+    mode_choice = "Frequency Shift Keying (FSK)"
 
     if mode == "single":
         baud_rate = int(
@@ -154,7 +157,8 @@ def ask_simulation_params(mode="single"):
             inquirer.text(
                 message="Enter desired SNR (dB):",
                 default="18",
-                validate=lambda val: val.replace(".", "", 1).isdigit() and float(val) > 0,
+                validate=lambda val: val.replace(".", "", 1).isdigit()
+                and float(val) > 0,
             ).execute()
         )
     else:
@@ -203,16 +207,20 @@ def ask_simulation_params(mode="single"):
     ).execute()
 
     retransmit_enabled = inquirer.confirm(
-        message=("Enable retransmission for corrupted bytes?"
-                 if mode == "single"
-                 else "Enable retransmission for corrupted bytes during sweep?"),
+        message=(
+            "Enable retransmission for corrupted bytes?"
+            if mode == "single"
+            else "Enable retransmission for corrupted bytes during sweep?"
+        ),
         default=True,
     ).execute()
 
     auto_adjust = inquirer.confirm(
-        message=("Allow automatic adjustment of sampling/carrier frequencies?"
-                 if mode == "single"
-                 else "Allow automatic parameter adjustment to ensure maximum stability during sweep?"),
+        message=(
+            "Allow automatic adjustment of sampling/carrier frequencies?"
+            if mode == "single"
+            else "Allow automatic parameter adjustment to ensure maximum stability during sweep?"
+        ),
         default=True,
     ).execute()
 
@@ -466,8 +474,6 @@ def apply_fading(signal, model="none", K_factor=0, doppler_rate=0.01):
     N = len(signal)
     if model is None or model.lower() == "none" or N == 0:
         return signal
-
-    import numpy as np
 
     # ---- Build a correlated complex Gaussian process g[n] ----
     # Target: E[|g|^2] = 1 (unit power), AR(1) with coefficient rho.
@@ -731,6 +737,7 @@ def interactive_console():
 # =============== SINGLE TEST IMPLEMENTATION ===============
 # ==========================================================
 
+
 def single_test_run():
     """Run a single FSK simulation interactively with user-defined retransmission policy."""
     p = ask_simulation_params(mode="single")
@@ -766,9 +773,11 @@ def single_test_run():
         sweep_mode=False,
     )
 
+
 # ==========================================================
 # ================ SWEEP MODE IMPLEMENTATION ===============
 # ==========================================================
+
 
 def sweep_mode_run():
     """Run multiple FSK simulations with parameter sweeps, including retransmission control."""
@@ -852,9 +861,11 @@ def sweep_mode_run():
 
     display_results_table(results)
 
+
 # ==========================================================
 # ================== RUN SIMULATION CORE ===================
 # ==========================================================
+
 
 def run_simulation(
     mode_choice,

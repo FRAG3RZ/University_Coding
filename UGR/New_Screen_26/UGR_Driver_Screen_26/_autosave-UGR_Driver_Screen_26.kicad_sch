@@ -7856,10 +7856,6 @@
 		(uuid "66c5ff70-42e5-43b0-afef-99a9931b820c")
 	)
 	(no_connect
-		(at 67.31 214.63)
-		(uuid "6d7ce85f-8e47-4620-aad2-fb19620c224f")
-	)
-	(no_connect
 		(at 214.63 237.49)
 		(uuid "799318df-0590-41e1-8b85-60b9a6defee9")
 	)
@@ -10831,6 +10827,28 @@
 			)
 		)
 	)
+	(global_label "LCD_RD"
+		(shape output)
+		(at 67.31 214.63 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "5e29443b-e065-4d8f-b7c5-39309a7b2c2f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 57.2491 214.63 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "SD_MISO"
 		(shape output)
 		(at 118.11 212.09 0)
@@ -11447,7 +11465,7 @@
 			)
 		)
 	)
-	(global_label "LCD_RD"
+	(global_label "LCD_RS"
 		(shape output)
 		(at 67.31 209.55 180)
 		(fields_autoplaced yes)
@@ -11459,7 +11477,7 @@
 		)
 		(uuid "acd21cc9-3199-4a04-b2da-67086ab3acc4")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 57.2491 209.55 0)
+			(at 57.3096 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)

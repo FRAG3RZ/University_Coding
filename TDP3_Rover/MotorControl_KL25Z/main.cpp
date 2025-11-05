@@ -4,8 +4,8 @@
  * Explicit GPIO logic with adjustable PWM duty and timing.
  *
  * Motor driver: L298N
- * - Left motor: IN1, IN2, ENA (PWM)
- * - Right motor: IN3, IN4, ENB (PWM)
+ * - Left motor: left_in1, left_in2, left_pwm (PWM)
+ * - Right motor: right_in1, right_in2, right_pwm (PWM)
  * PWM frequency: 20 kHz
  */
 
@@ -13,14 +13,14 @@
 
 // === Pin assignments (adjust if needed) ===
 // Left motor
-DigitalOut IN1(D7);
-DigitalOut IN2(D6);
-PwmOut     ENA(D5);
+DigitalOut left_in1(D7);
+DigitalOut left_in2(D6);
+PwmOut     left_pwm(D5);
 
 // Right motor
-DigitalOut IN3(D4);
-DigitalOut IN4(D3);
-PwmOut     ENB(D2);
+DigitalOut right_in1(D4);
+DigitalOut right_in2(D3);
+PwmOut     right_pwm(D2);
 
 // RGB LEDs (onboard KL25Z)
 DigitalOut LED_R(LED_RED);
@@ -40,8 +40,8 @@ void leds_set(bool r, bool g, bool b) {
 
 // === PWM helper ===
 void motors_set_duty_sync(float left_duty, float right_duty) {
-    ENA.write(left_duty);
-    ENB.write(right_duty);
+    left_pwm.write(left_duty);
+    right_pwm.write(right_duty);
 }
 
 // === Safe shutdown ===
@@ -49,8 +49,8 @@ void motors_all_off() {
     motors_set_duty_sync(0.0f, 0.0f);
 
     // Coast both motors
-    IN1 = 0; IN2 = 0;
-    IN3 = 0; IN4 = 0;
+    left_in1 = 0; left_in2 = 0;
+    right_in1 = 0; right_in2 = 0;
 
     leds_set(false, false, false);
 }
@@ -60,8 +60,8 @@ void move_forward(float duty, int duration_ms) {
     printf("Forward at %.0f%%\n", duty * 100);
     leds_set(false, true, false); // Green
 
-    IN1 = 1; IN2 = 0; // Left forward
-    IN3 = 1; IN4 = 0; // Right forward
+    left_in1 = 1; left_in2 = 0; // Left forward
+    right_in1 = 1; right_in2 = 0; // Right forward
 
     motors_set_duty_sync(duty, duty);
     thread_sleep_for(duration_ms);
@@ -70,10 +70,10 @@ void move_forward(float duty, int duration_ms) {
 
 void move_backward(float duty, int duration_ms) {
     printf("Backward at %.0f%%\n", duty * 100);
-    leds_set(false, false, true); // Blue
+    leds_set(true, false, false);
 
-    IN1 = 0; IN2 = 1; // Left backward
-    IN3 = 0; IN4 = 1; // Right backward
+    left_in1 = 0; left_in2 = 1; // Left backward
+    right_in1 = 0; right_in2 = 1; // Right backward
 
     motors_set_duty_sync(duty, duty);
     thread_sleep_for(duration_ms);
@@ -84,8 +84,8 @@ void turn_left_skid_reverse_inner(float duty_outer, int duration_ms) {
     printf("Turn left (reverse inner)\n");
     leds_set(true, false, true); // Magenta
 
-    IN1 = 0; IN2 = 1; // Left reverse
-    IN3 = 1; IN4 = 0; // Right forward
+    left_in1 = 0; left_in2 = 1; // Left reverse
+    right_in1 = 1; right_in2 = 0; // Right forward
 
     motors_set_duty_sync(duty_outer, duty_outer);
     thread_sleep_for(duration_ms);
@@ -96,8 +96,8 @@ void turn_left_skid_coast_inner(float duty_outer, int duration_ms) {
     printf("Turn left (coast inner)\n");
     leds_set(true, true, false); // Yellow
 
-    IN1 = 0; IN2 = 0; // Left coast
-    IN3 = 1; IN4 = 0; // Right forward
+    left_in1 = 0; left_in2 = 0; // Left coast
+    right_in1 = 1; right_in2 = 0; // Right forward
 
     motors_set_duty_sync(0.0f, duty_outer);
     thread_sleep_for(duration_ms);
@@ -108,8 +108,8 @@ void turn_right_skid_reverse_inner(float duty_outer, int duration_ms) {
     printf("Turn right (reverse inner)\n");
     leds_set(false, true, true); // Cyan
 
-    IN1 = 1; IN2 = 0; // Left forward
-    IN3 = 0; IN4 = 1; // Right reverse
+    left_in1 = 1; left_in2 = 0; // Left forward
+    right_in1 = 0; right_in2 = 1; // Right reverse
 
     motors_set_duty_sync(duty_outer, duty_outer);
     thread_sleep_for(duration_ms);
@@ -120,8 +120,8 @@ void turn_right_skid_coast_inner(float duty_outer, int duration_ms) {
     printf("Turn right (coast inner)\n");
     leds_set(true, false, false); // Red
 
-    IN1 = 1; IN2 = 0; // Left forward
-    IN3 = 0; IN4 = 0; // Right coast
+    left_in1 = 1; left_in2 = 0; // Left forward
+    right_in1 = 0; right_in2 = 0; // Right coast
 
     motors_set_duty_sync(duty_outer, 0.0f);
     thread_sleep_for(duration_ms);
@@ -140,23 +140,30 @@ int main() {
     printf("Dual-motor control (explicit GPIO logic, MBED, KL25Z)\n");
 
     // Setup PWM frequency
-    ENA.period(1.0f / PWM_FREQ_HZ);
-    ENB.period(1.0f / PWM_FREQ_HZ);
+    left_pwm.period(1.0f / PWM_FREQ_HZ);
+    right_pwm.period(1.0f / PWM_FREQ_HZ);
 
     // Ensure everything is off initially
     motors_all_off();
 
     while (true) {
-        motors_coast(2000);
 
+        move_forward(0.1f, 2000);
         move_forward(0.2f, 2000);
-        move_forward(0.4f, 2000);
+        move_forward(0.3f, 2000);
+        move_forward(0.4f, 4000);
+        move_forward(0.5f, 2000);
         move_forward(0.6f, 2000);
-        move_forward(0.8f, 4000);
+        move_forward(0.7f, 2000);
+        /*
+        move_forward(0.9f, 4000);
+        move_forward(1.0f, 2000);
+        
         turn_left_skid_reverse_inner(0.6f, 3000);
         turn_left_skid_coast_inner(0.6f, 3000);
         turn_right_skid_reverse_inner(0.6f, 3000);
         turn_right_skid_coast_inner(0.6f, 3000);
         move_backward(0.7f, 4000);
+        */
     }
 }

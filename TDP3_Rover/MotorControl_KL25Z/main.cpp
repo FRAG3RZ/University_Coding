@@ -55,6 +55,33 @@ void motors_all_off() {
     leds_set(false, false, false);
 }
 
+// === Stop modes ===
+
+// Soft stop: let motors freewheel
+void motors_coast(int duration_ms) {
+    printf("Coasting...\n");
+    leds_set(true, true, false);  // Yellow
+    motors_all_off();
+    thread_sleep_for(duration_ms);
+}
+
+// Hard stop: short both motor terminals to brake
+void motors_brake(float strength, int duration_ms) {
+    printf("Braking at %.0f%%\n", strength * 100);
+    leds_set(false, false, true); // Blue
+
+    // Both inputs HIGH -> motor terminals shorted (active braking)
+    left_in1 = 1; left_in2 = 1;
+    right_in1 = 1; right_in2 = 1;
+
+    // Apply PWM to control braking torque
+    left_pwm.write(strength);
+    right_pwm.write(strength);
+
+    thread_sleep_for(duration_ms);
+    motors_all_off(); // release brake to coast
+}
+
 // === Motion routines ===
 void move_forward(float duty, int duration_ms) {
     printf("Forward at %.0f%%\n", duty * 100);
@@ -70,7 +97,7 @@ void move_forward(float duty, int duration_ms) {
 
 void move_backward(float duty, int duration_ms) {
     printf("Backward at %.0f%%\n", duty * 100);
-    leds_set(true, false, false);
+    leds_set(true, false, false); // Red
 
     left_in1 = 0; left_in2 = 1; // Left backward
     right_in1 = 0; right_in2 = 1; // Right backward
@@ -128,13 +155,6 @@ void turn_right_skid_coast_inner(float duty_outer, int duration_ms) {
     motors_all_off();
 }
 
-void motors_coast(int duration_ms) {
-    printf("Coast\n");
-    leds_set(true, false, false);
-    motors_all_off();
-    thread_sleep_for(duration_ms);
-}
-
 // === Main ===
 int main() {
     printf("Dual-motor control (explicit GPIO logic, MBED, KL25Z)\n");
@@ -143,27 +163,14 @@ int main() {
     left_pwm.period(1.0f / PWM_FREQ_HZ);
     right_pwm.period(1.0f / PWM_FREQ_HZ);
 
-    // Ensure everything is off initially
-    motors_all_off();
+    motors_all_off(); // Ensure off at startup
 
     while (true) {
-
-        move_forward(0.1f, 2000);
-        move_forward(0.2f, 2000);
-        move_forward(0.3f, 2000);
-        move_forward(0.4f, 4000);
-        move_forward(0.5f, 2000);
-        move_forward(0.6f, 2000);
-        move_forward(0.7f, 2000);
-        /*
-        move_forward(0.9f, 4000);
-        move_forward(1.0f, 2000);
-        
-        turn_left_skid_reverse_inner(0.6f, 3000);
-        turn_left_skid_coast_inner(0.6f, 3000);
-        turn_right_skid_reverse_inner(0.6f, 3000);
-        turn_right_skid_coast_inner(0.6f, 3000);
-        move_backward(0.7f, 4000);
-        */
+        move_forward(0.4f, 3000);
+        motors_brake(1.0f, 500);   // hard brake
+        motors_coast(1000);        // then coast for a second
+        move_backward(0.4f, 3000);
+        motors_brake(0.5f, 400);   // softer brake
+        motors_coast(2000);
     }
 }
